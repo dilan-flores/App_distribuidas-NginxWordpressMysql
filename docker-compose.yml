@@ -1,0 +1,100 @@
+version: '3.9'
+services:
+  wordpress1:
+    image: wordpress
+    container_name: wordpress1
+    env_file:
+      - .env
+    ports:
+      - "8081:80"
+    networks:
+      - wordpressred
+    depends_on:
+      - database
+    volumes:
+      - ${WORDPRESS_LOCAL_HOME}:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+
+  wordpress2:
+    image: wordpress
+    container_name: wordpress2
+    env_file:
+      - .env
+    ports:
+      - "8082:80"
+    networks:
+      - wordpressred
+    depends_on:
+      - database
+    volumes:
+      - ${WORDPRESS_LOCAL_HOME}:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+
+  wordpress3:
+    image: wordpress
+    container_name: wordpress3
+    env_file:
+      - .env
+    ports:
+      - "8083:80"
+    networks:
+      - wordpressred
+    depends_on:
+      - database
+    volumes:
+      - ${WORDPRESS_LOCAL_HOME}:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+
+  database:
+    image: mysql
+    container_name: database
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    networks:
+      - wordpressred
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ${MYSQL_LOCAL_HOME}:/var/lib/mysql
+    command: 
+      - '--default-authentication-plugin=mysql_native_password'
+    
+  nginx:
+    image: nginx
+    container_name: nginx
+    env_file:
+      - .env
+    ports: 
+      - "8080:80"
+    networks:
+      - wordpressred
+    volumes:
+      - ${WORDPRESS_LOCAL_HOME}:/var/www/html
+      - ${NGINX_CONF}:/etc/nginx/nginx.conf:ro
+      - ${NGINX_SSL_CERTS}:/etc/ssl:ro
+      - ${NGINX_LOGS}:/var/log/nginx
+    depends_on:
+      - wordpress1
+      - wordpress2
+      - wordpress3
+    
+networks:
+  wordpressred:
+    driver: bridge
