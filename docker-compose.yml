@@ -14,13 +14,11 @@ services:
     volumes:
       - ${WORDPRESS_LOCAL_HOME1}:/var/www/html
     environment:
-      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST1}
+      WORDPRESS_DB_HOST1: ${WORDPRESS_DB_HOST1}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       APACHE_SERVER_NAME: wordpress-backend.com
-    links:
-      - database1:database1
 
   wordpress2:
     image: wordpress
@@ -36,13 +34,11 @@ services:
     volumes:
       - ${WORDPRESS_LOCAL_HOME2}:/var/www/html
     environment:
-      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST2}
+      WORDPRESS_DB_HOST2: ${WORDPRESS_DB_HOST2}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       APACHE_SERVER_NAME: wordpress-backend.com
-    links:
-      - database2:database2
 
   wordpress3:
     image: wordpress
@@ -58,13 +54,11 @@ services:
     volumes:
       - ${WORDPRESS_LOCAL_HOME3}:/var/www/html
     environment:
-      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST3}
+      WORDPRESS_DB_HOST3: ${WORDPRESS_DB_HOST3}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       APACHE_SERVER_NAME: wordpress-backend.com
-    links:
-      - database3:database3
 
   database1:
     image: mysql
