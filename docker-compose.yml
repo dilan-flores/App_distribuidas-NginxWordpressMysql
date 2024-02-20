@@ -9,16 +9,15 @@ services:
       - "8081:80"
     networks:
       - wordpressred
-    depends_on:
-      - database1
     volumes:
       - ${WORDPRESS_LOCAL_HOME1}:/var/www/html
     environment:
-      WORDPRESS_DB_HOST1: ${WORDPRESS_DB_HOST1}
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      APACHE_SERVER_NAME: wordpress-backend.com
+      WORDPRESS_TABLE_PREFIX1: ${WORDPRESS_TABLE_PREFIX1}
+      APACHE-SERVER-NAME: wordpress-backend.com
 
   wordpress2:
     image: wordpress
@@ -29,16 +28,15 @@ services:
       - "8082:80"
     networks:
       - wordpressred
-    depends_on:
-      - database2
     volumes:
       - ${WORDPRESS_LOCAL_HOME2}:/var/www/html
     environment:
-      WORDPRESS_DB_HOST2: ${WORDPRESS_DB_HOST2}
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      APACHE_SERVER_NAME: wordpress-backend.com
+      WORDPRESS_TABLE_PREFIX2: ${WORDPRESS_TABLE_PREFIX2}
+      APACHE-SERVER-NAME: wordpress-backend.com
 
   wordpress3:
     image: wordpress
@@ -49,20 +47,41 @@ services:
       - "8083:80"
     networks:
       - wordpressred
-    depends_on:
-      - database3
     volumes:
       - ${WORDPRESS_LOCAL_HOME3}:/var/www/html
     environment:
-      WORDPRESS_DB_HOST3: ${WORDPRESS_DB_HOST3}
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      APACHE_SERVER_NAME: wordpress-backend.com
+      WORDPRESS_TABLE_PREFIX3: ${WORDPRESS_TABLE_PREFIX3}
+      APACHE-SERVER-NAME: wordpress-backend.com
 
-  database1:
+  database_master:
     image: mysql
-    container_name: database1
+    container_name: database_master
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    networks:
+      - wordpressred
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      # MYSQL_USER: ${MYSQL_USER}
+      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
+    command: 
+      - '--default-authentication-plugin=mysql_native_password'
+      - '--server-id=1'
+      - '--log-bin=mysql-bin'
+      - '--binlog-do-db=${MYSQL_DATABASE}'
+    
+  database_esclavo:
+    image: mysql:latest
+    container_name: database_esclavo
     env_file:
       - .env
     ports:
@@ -71,31 +90,8 @@ services:
       - wordpressred
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    volumes:
-      - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
-    command: 
-      - '--default-authentication-plugin=mysql_native_password'
-      - '--server-id=1'
-      - '--log-bin=mysql-bin'
-      - '--binlog-do-db=wordpress'
-
-  
-  database2:
-    image: mysql
-    container_name: database2
-    env_file:
-      - .env
-    ports:
-      - "3308:3306"
-    networks:
-      - wordpressred
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # MYSQL_USER: ${MYSQL_USER}
+      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ${MYSQL_LOCAL_HOME2}:/var/lib/mysql
@@ -103,29 +99,30 @@ services:
       - '--default-authentication-plugin=mysql_native_password'
       - '--server-id=2'
       - '--log-bin=mysql-bin'
-      - '--binlog-do-db=wordpress'
+      - '--binlog-do-db=${MYSQL_DATABASE}'
 
-  database3:
-    image: mysql
-    container_name: database3
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
     env_file:
       - .env
     ports:
-      - "3309:3306"
+      - "8080:80"
     networks:
       - wordpressred
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      - database_master
+      - database_esclavo
     volumes:
-      - ${MYSQL_LOCAL_HOME3}:/var/lib/mysql
-    command: 
-      - '--default-authentication-plugin=mysql_native_password'
-      - '--server-id=3'
-      - '--log-bin=mysql-bin'
-      - '--binlog-do-db=wordpress'
+      - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
+      - ${MYSQL_LOCAL_HOME2}:/var/lib/mysql
+    environment:
+      PMA_HOST: ${MYSQL_HOST}
+      # PMA_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PWA_ARBITRARY: 1
+    links:
+      - database_master:database_master
+      - database_esclavo:database_esclavo
 
   nginx:
     image: nginx
@@ -133,7 +130,7 @@ services:
     env_file:
       - .env
     ports: 
-      - "8080:80"
+      - "80:80"
     networks:
       - wordpressred
     volumes:

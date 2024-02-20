@@ -2,9 +2,9 @@
 .env
 
 # wordpress files
-wordpres1
-wordpres2
-wordpres3
+wordpress1
+wordpress2
+wordpress3
 
 # mysql files
 dbdata1
