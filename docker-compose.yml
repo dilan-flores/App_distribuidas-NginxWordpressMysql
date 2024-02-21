@@ -57,52 +57,42 @@ services:
       WORDPRESS_TABLE_PREFIX3: ${WORDPRESS_TABLE_PREFIX3}
       APACHE-SERVER-NAME: wordpress-backend.com
 
-  database_master:
+  base_master:
     image: mysql
-    container_name: database_master
+    container_name: base_master
     env_file:
       - .env
-    ports:
-      - "3306:3306"
     networks:
       - wordpressred
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      # MYSQL_USER: ${MYSQL_USER}
-      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
-    command: 
-      - '--default-authentication-plugin=mysql_native_password'
-      - '--server-id=1'
-      - '--log-bin=mysql-bin'
-      - '--binlog-do-db=${MYSQL_DATABASE}'
+    command: --server-id=1 --log-bin=mysql-bin --binlog-do-db=replica
+      #- '--default-authentication-plugin=mysql_native_password'
     
-  database_esclavo:
+  base_esclavo:
     image: mysql:latest
-    container_name: database_esclavo
+    container_name: base_esclavo
     env_file:
       - .env
-    ports:
-      - "3307:3306"
     networks:
       - wordpressred
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      # MYSQL_USER: ${MYSQL_USER}
-      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ${MYSQL_LOCAL_HOME2}:/var/lib/mysql
-    command: 
-      - '--default-authentication-plugin=mysql_native_password'
-      - '--server-id=2'
-      - '--log-bin=mysql-bin'
-      - '--binlog-do-db=${MYSQL_DATABASE}'
+    command: --server-id=2 --log-bin=mysql-bin --binlog-do-db=replica
+      #- '--default-authentication-plugin=mysql_native_password'
 
   phpmyadmin:
-    image: phpmyadmin:latest
+    image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     env_file:
       - .env
@@ -111,18 +101,15 @@ services:
     networks:
       - wordpressred
     depends_on:
-      - database_master
-      - database_esclavo
+      - base_master
+      - base_esclavo
     volumes:
       - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
       - ${MYSQL_LOCAL_HOME2}:/var/lib/mysql
     environment:
       PMA_HOST: ${MYSQL_HOST}
-      # PMA_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      PWA_ARBITRARY: 1
-    links:
-      - database_master:database_master
-      - database_esclavo:database_esclavo
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PMA_ARBITRARY: 1
 
   nginx:
     image: nginx
@@ -144,7 +131,7 @@ services:
       - wordpress1
       - wordpress2
       - wordpress3
-    
+
 networks:
   wordpressred:
     driver: bridge
