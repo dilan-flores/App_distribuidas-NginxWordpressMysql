@@ -16,7 +16,7 @@ services:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      WORDPRESS_TABLE_PREFIX1: ${WORDPRESS_TABLE_PREFIX1}
+      WORDPRESS_TABLE_PREFIX: wp1_wordpress
       APACHE-SERVER-NAME: wordpress-backend.com
 
   wordpress2:
@@ -35,7 +35,7 @@ services:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      WORDPRESS_TABLE_PREFIX2: ${WORDPRESS_TABLE_PREFIX2}
+      WORDPRESS_TABLE_PREFIX: wp2_wordpress
       APACHE-SERVER-NAME: wordpress-backend.com
 
   wordpress3:
@@ -54,7 +54,7 @@ services:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      WORDPRESS_TABLE_PREFIX3: ${WORDPRESS_TABLE_PREFIX3}
+      WORDPRESS_TABLE_PREFIX: wp3_wordpress
       APACHE-SERVER-NAME: wordpress-backend.com
 
   base_master:
@@ -103,9 +103,9 @@ services:
     depends_on:
       - base_master
       - base_esclavo
-    volumes:
-      - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
-      - ${MYSQL_LOCAL_HOME2}:/var/lib/mysql
+    # volumes:
+    #   - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
+    #   - ${MYSQL_LOCAL_HOME2}:/var/lib/mysql
     environment:
       PMA_HOST: ${MYSQL_HOST}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
