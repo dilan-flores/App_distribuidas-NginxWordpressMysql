@@ -1,4 +1,5 @@
 version: '3.9'
+
 services:
   wordpress1:
     image: wordpress
@@ -16,7 +17,7 @@ services:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      WORDPRESS_TABLE_PREFIX: wp1_wordpress
+      WORDPRESS_TABLE_PREFIX1: wp1_wordpress
       APACHE-SERVER-NAME: wordpress-backend.com
 
   wordpress2:
@@ -35,7 +36,7 @@ services:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      WORDPRESS_TABLE_PREFIX: wp2_wordpress
+      WORDPRESS_TABLE_PREFIX2: wp2_wordpress
       APACHE-SERVER-NAME: wordpress-backend.com
 
   wordpress3:
@@ -44,7 +45,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8083:80"
+      - "8084:80"
     networks:
       - wordpressred
     volumes:
@@ -54,7 +55,7 @@ services:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      WORDPRESS_TABLE_PREFIX: wp3_wordpress
+      WORDPRESS_TABLE_PREFIX3: wp3_wordpress
       APACHE-SERVER-NAME: wordpress-backend.com
 
   base_master:
@@ -71,9 +72,12 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
-    command: --server-id=1 --log-bin=mysql-bin --binlog-do-db=replica
-      #- '--default-authentication-plugin=mysql_native_password'
-    
+    command: 
+      - '--server-id=1'
+      - '--log-bin=mysql-bin'
+      - '--binlog-do-db=replica'
+      - '--default-authentication-plugin=mysql_native_password'
+
   base_esclavo:
     image: mysql:latest
     container_name: base_esclavo
@@ -88,8 +92,11 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ${MYSQL_LOCAL_HOME2}:/var/lib/mysql
-    command: --server-id=2 --log-bin=mysql-bin --binlog-do-db=replica
-      #- '--default-authentication-plugin=mysql_native_password'
+    command: 
+      - '--server-id=2'
+      - '--log-bin=mysql-bin'
+      - '--binlog-do-db=replica'
+      - '--default-authentication-plugin=mysql_native_password'
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -103,11 +110,8 @@ services:
     depends_on:
       - base_master
       - base_esclavo
-    # volumes:
-    #   - ${MYSQL_LOCAL_HOME1}:/var/lib/mysql
-    #   - ${MYSQL_LOCAL_HOME2}:/var/lib/mysql
     environment:
-      PMA_HOST: ${MYSQL_HOST}
+      PMA_HOST: base_master,base_esclavo
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       PMA_ARBITRARY: 1
 
@@ -121,9 +125,9 @@ services:
     networks:
       - wordpressred
     volumes:
-      - ${WORDPRESS_LOCAL_HOME1}:/var/www/html
-      - ${WORDPRESS_LOCAL_HOME2}:/var/www/html
-      - ${WORDPRESS_LOCAL_HOME3}:/var/www/html
+      - ${WORDPRESS_LOCAL_HOME1}:/var/www/html/wordpress1
+      - ${WORDPRESS_LOCAL_HOME2}:/var/www/html/wordpress2
+      - ${WORDPRESS_LOCAL_HOME3}:/var/www/html/wordpress3
       - ${NGINX_CONF}:/etc/nginx/nginx.conf:ro
       - ${NGINX_SSL_CERTS}:/etc/ssl:ro
       - ${NGINX_LOGS}:/var/log/nginx
